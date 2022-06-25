@@ -4,12 +4,12 @@ import {Middlewares} from './middlewares'
 
 const middlewares = new Middlewares()
 
-export function createRouter(options = {}) {
+export function createRouter(env, options = {}) {
     return take(
         baseCreateRouter(
             Object.assign(
                 {
-                    history: createWebHistory(process.env.BASE_URL),
+                    history: createWebHistory(env.BASE_URL),
                 },
                 options || {},
             ),

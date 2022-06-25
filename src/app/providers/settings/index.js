@@ -1,4 +1,4 @@
-import {localization as config} from '@/config'
+import {env, localization as config} from '@/config'
 import {registerPropertyFactory} from '@/app/support/helpers'
 import {I18LocaleHandler, Settings} from '@/app/support/settings'
 
@@ -6,7 +6,7 @@ const localeHandler = new I18LocaleHandler(config.locale.supported)
 const settings = new Settings()
     .setLocaleHandler(localeHandler)
 
-export const i18n = localeHandler.createI18Provider({
+export const i18n = localeHandler.createI18Provider(env, {
     locale: config.locale.default,
     fallbackLocale: config.locale.fallback,
 })

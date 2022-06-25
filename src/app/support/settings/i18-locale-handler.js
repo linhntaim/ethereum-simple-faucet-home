@@ -4,7 +4,7 @@ import {LocaleHandler} from './locale-handler'
 
 export class I18LocaleHandler extends LocaleHandler
 {
-    createI18Provider(options = {}) {
+    createI18Provider(env, options = {}) {
         return take(
             createI18n(
                 take(
@@ -12,8 +12,8 @@ export class I18LocaleHandler extends LocaleHandler
                         {
                             globalInjection: true,
                             legacy: false,
-                            locale: process.env.VUE_APP_I18N_LOCALE || 'en',
-                            fallbackLocale: process.env.VUE_APP_I18N_FALLBACK_LOCALE || 'en',
+                            locale: env.VUE_APP_I18N_LOCALE || 'en',
+                            fallbackLocale: env.VUE_APP_I18N_FALLBACK_LOCALE || 'en',
                         },
                         options || {},
                     ),
