@@ -1,12 +1,11 @@
-import {app} from '@/bootstrap/app'
 import {localization} from '@/config'
 import {Middleware} from '@/app/support/router'
 
 export class Fresh extends Middleware
 {
     async beforeEach(to, from, next) {
-        const fresh = app.$start.isFresh()
-        app.$start.continue()
+        const fresh = this.app.$start.isFresh()
+        this.app.$start.continue()
         if (fresh) {
             await this.restoreFromCache()
             await this.restoreFromCookie()
@@ -15,15 +14,15 @@ export class Fresh extends Middleware
     }
 
     async restoreFromCache() {
-        app.$log.debug('middleware', 'fresh.restoreFromCache')
+        this.app.$log.debug('middleware', 'fresh.restoreFromCache')
         //
     }
 
     async restoreFromCookie() {
-        app.$log.debug('middleware', 'fresh.restoreFromCookie')
+        this.app.$log.debug('middleware', 'fresh.restoreFromCookie')
         // settings
-        await app.$settings
-            .set(await app.$cookie.get('settings', {
+        await this.app.$settings
+            .set(await this.app.$cookie.get('settings', {
                 locale: localization.locale.default,
             }))
             .apply()

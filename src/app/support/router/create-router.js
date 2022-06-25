@@ -2,8 +2,6 @@ import {createRouter as baseCreateRouter, createWebHistory} from 'vue-router'
 import {take} from '../helpers'
 import {Middlewares} from './middlewares'
 
-const middlewares = new Middlewares()
-
 export function createRouter(env, options = {}) {
     return take(
         baseCreateRouter(
@@ -15,15 +13,23 @@ export function createRouter(env, options = {}) {
             ),
         ),
         router => {
-            router.beforeEach(
-                (to, from, next) => middlewares.collect(to).beforeEach(to, from, next),
-            )
-            router.beforeResolve(
-                (to, from, next) => middlewares.collect(to).beforeResolve(to, from, next),
-            )
-            router.afterEach(
-                (to, from) => middlewares.collect(to).afterEach(to, from),
-            )
+            const install = router.install
+            router.install = function (app) {
+                install.call(this, app)
+
+                let middlewares = null
+                const createMiddlewares = app => middlewares ? middlewares : middlewares = new Middlewares(app)
+
+                this.beforeEach(
+                    (to, from, next) => createMiddlewares(app._instance.proxy).collect(to).beforeEach(to, from, next),
+                )
+                this.beforeResolve(
+                    (to, from, next) => createMiddlewares(app._instance.proxy).beforeResolve(to, from, next),
+                )
+                this.afterEach(
+                    (to, from) => createMiddlewares(app._instance.proxy).afterEach(to, from),
+                )
+            }
         },
     )
 }
