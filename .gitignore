@@ -27,4 +27,4 @@ pnpm-debug.log*
 *.backup*
 *.dev*
 
-/public/vendor
+/public/vendors
