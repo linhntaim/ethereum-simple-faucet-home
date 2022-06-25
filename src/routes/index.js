@@ -13,7 +13,7 @@ export const routes = [
             {
                 path: 'clear-site-data',
                 name: 'clear_site_data',
-                component: () => import('@/resources/views/pages/ClearSiteData'),
+                component: () => import(/* webpackChunkName: "view-clear-site-data" */ '@/resources/views/pages/ClearSiteData'),
             },
             {
                 path: 'error',
@@ -22,7 +22,7 @@ export const routes = [
                     {
                         path: '404',
                         name: 'not_found',
-                        component: () => import('@/resources/views/errors/NotFound'),
+                        component: () => import(/* webpackChunkName: "view-error-not-found" */ '@/resources/views/errors/NotFound'),
                     },
                     //
                 ],
@@ -30,18 +30,18 @@ export const routes = [
             {
                 path: '/',
                 name: 'root',
-                component: () => import('@/resources/views/pages/Home'),
+                component: () => import(/* webpackChunkName: "view-home" */ '@/resources/views/pages/Home'),
             },
             //
             {
                 path: 'about',
                 name: 'about',
-                component: () => import('@/resources/views/pages/About'),
+                component: () => import(/* webpackChunkName: "view-about" */ '@/resources/views/pages/About'),
             },
             //
             {
                 path: ':pathMatch(.*)*',
-                component: () => import('@/resources/views/pages/Welcome'),
+                component: () => import(/* webpackChunkName: "view-welcome" */ '@/resources/views/pages/Welcome'),
             },
         ],
     },
