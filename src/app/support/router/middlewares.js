@@ -24,6 +24,8 @@ export class Middlewares
                         middleware[method](to, from, handle)
                         return
                     }
+                    handle()
+                    return
                 }
                 next()
             }
