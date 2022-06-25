@@ -1,14 +1,23 @@
 import {createApp} from 'vue'
 import {createStart} from '@/app/support/start'
 import {providers} from '@/app/providers'
-import {take, time} from '@/app/support/helpers'
+import {modify, take, time} from '@/app/support/helpers'
 import App from '@/resources/views/App'
 
 export const vueStart = time()
 
-export const app = take(createApp(App), function (app) {
+export const app = modify(createApp(App), vueApp => {
     // register start plugin
-    app.use(createStart(vueStart))
+    vueApp.use(createStart(vueStart))
     // register plugins
-    Object.keys(providers).forEach(key => app.use(providers[key]))
-}).mount('#app')
+    Object.keys(providers).forEach(key => vueApp.use(providers[key]))
+
+    return take(vueApp.mount('#app'), app => {
+        // when built, `_instance` is always null (?) => must trick to proxy the app
+        if (vueApp._instance == null) {
+            vueApp._instance = {
+                proxy: app,
+            }
+        }
+    })
+})
