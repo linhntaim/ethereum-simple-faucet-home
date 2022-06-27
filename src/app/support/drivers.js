@@ -36,37 +36,17 @@ export class Drivers
         return this
     }
 
-    with(driver, callback, key = 'default') {
-        if (!(driver in this.withs)) {
-            this.withs[driver] = {key: callback}
-        }
-        else {
-            this.withs[driver][key] = callback
-        }
-    }
-
-    without(driver, key = 'default') {
-        if (driver in this.withs) {
-            delete this.withs[driver][key]
-        }
+    mod(driver, callback) {
+        callback(this.driver(driver))
     }
 
     driver(driver = null) {
         if (driver == null) {
             driver = this.getDefaultDriver()
         }
-        return modify(
-            driver in this.drivers
-                ? this.drivers[driver]
-                : (this.drivers[driver] = this.createDriver(driver)),
-            driverInstance => {
-                const withs = driver in this.withs ? this.withs[driver] : {}
-                Object.keys(withs).forEach(key => {
-                    driverInstance = withs[key](driverInstance)
-                })
-                return driverInstance
-            },
-        )
+        return driver in this.drivers
+            ? this.drivers[driver]
+            : (this.drivers[driver] = this.createDriver(driver))
     }
 
     createDriver(driver) {
