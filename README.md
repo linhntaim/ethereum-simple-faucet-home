@@ -1,4 +1,4 @@
-# vue-3-starter
+# ethereum-simple-faucet-home
 
 ## Project setup
 ```
