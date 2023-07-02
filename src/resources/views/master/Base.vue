@@ -1,37 +1,43 @@
 <template lang="pug">
-nav
-    router-link(:to="{name: 'root'}") Home
-    | &nbsp;|&nbsp;
-    router-link(:to="{name: 'about'}") About
-router-view
+header.p-3.text-bg-dark
+    .container
+        .d-flex.flex-wrap.align-items-center.justify-content-center.justify-content-lg-start
+            a.d-flex.align-items-center.mb-2.mb-lg-0.me-lg-auto.text-white.text-decoration-none.text-center(href='/')
+                span.fs-4 {{ appName }}
+            ul.nav.col-12.col-lg-auto.justify-content-center
+                li(v-for="navItem in navItems")
+                    router-link.nav-link.px-2(:to="navItem.to" :class="$route.name == navItem.to.name ? 'text-secondary' : 'text-white'") {{ navItem.title }}
+main
+    .container
+        router-view
+toast-container.fixed-bottom
 </template>
 
 <script>
+import ToastContainer from '@/resources/views/components/toast/ToastContainer'
+
 export default {
     // eslint-disable-next-line
     name: 'Base',
+    components: {ToastContainer},
+    data() {
+        return {
+            appName: process.env.VUE_APP_NAME,
+            navItems: [
+                {
+                    title: 'Home',
+                    to: {
+                        name: 'root',
+                    },
+                },
+                {
+                    title: 'About',
+                    to: {
+                        name: 'about',
+                    },
+                },
+            ],
+        }
+    },
 }
 </script>
-
-<style lang="scss">
-#app {
-    font-family: Avenir, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-align: center;
-    color: #2c3e50;
-}
-
-nav {
-    padding: 30px;
-
-    a {
-        font-weight: bold;
-        color: #2c3e50;
-
-        &.router-link-exact-active {
-            color: #42b983;
-        }
-    }
-}
-</style>
