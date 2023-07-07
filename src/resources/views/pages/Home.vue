@@ -224,6 +224,36 @@ export default {
             this.$ethereum.off('chainChanged', this.onWalletChanged)
         },
         onGetClick() {
+            this.getWithFeePaidByOwner()
+        },
+        getWithFeePaidByOwner() {
+            this.loading.get = true
+            fetch(process.env.VUE_APP_FAUCET_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    chainId: this.chainId,
+                    address: this.wallet.address,
+                }),
+            })
+                .then(res => {
+                    if (res.status >= 400 && res.status < 600) {
+                        throw res
+                    }
+                    return res.json()
+                })
+                .then(() => {
+                    this.loading.get = false
+                    this.$bus.emit('toast', new SuccessToast('Successfully request to send ' + this.sendingAmount + ' ' + this.wallet.chain.nativeCurrency.symbol + ' to your wallet. Please wait for transaction confirmation.'))
+                })
+                .catch(() => {
+                    this.loading.get = false
+                    this.$bus.emit('toast', new DangerToast('Something went wrong. Please try again.'))
+                })
+        },
+        getWithFeePaidByUser() {
             const contract = this.$ethereum.declareContract(this.faucetContractAddress, [
                 'function sendMe()',
             ])
