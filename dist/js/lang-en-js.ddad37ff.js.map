@@ -1,0 +1,1 @@
+{"version":3,"file":"js/lang-en-js.ddad37ff.js","mappings":"kLAAA,cACIA,MAAO,gB","sources":["webpack://@linhntaim/ethereum-simple-faucet-home/./src/lang/en.js"],"sourcesContent":["export default {\r\n    hello: 'Hello {world}',\r\n}\r\n"],"names":["hello"],"sourceRoot":""}

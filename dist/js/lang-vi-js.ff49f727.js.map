@@ -1,0 +1,1 @@
+{"version":3,"file":"js/lang-vi-js.ff49f727.js","mappings":"kLAAA,cACIA,MAAO,mB","sources":["webpack://@linhntaim/ethereum-simple-faucet-home/./src/lang/vi.js"],"sourcesContent":["export default {\r\n    hello: 'Xin chào {world}',\r\n}\r\n"],"names":["hello"],"sourceRoot":""}

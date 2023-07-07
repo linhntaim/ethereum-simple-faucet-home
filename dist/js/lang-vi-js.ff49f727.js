@@ -1,0 +1,2 @@
+"use strict";(self["webpackChunk_linhntaim_ethereum_simple_faucet_home"]=self["webpackChunk_linhntaim_ethereum_simple_faucet_home"]||[]).push([[355],{8104:function(e,h,l){l.r(h),h["default"]={hello:"Xin chào {world}"}}}]);
+//# sourceMappingURL=lang-vi-js.ff49f727.js.map
