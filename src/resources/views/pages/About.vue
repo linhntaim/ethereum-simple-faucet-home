@@ -15,8 +15,8 @@
         | Smartcontract:&nbsp;
         a(href="https://github.com/linhntaim/ethereum-simple-faucet-contract" target="_blank") https://github.com/linhntaim/ethereum-simple-faucet-contract
     h2#suported-network.mt-4 #supported networks
-    .mb-2
-        a(href="https://chainlist.org/?search=Rollux+Testnet&testnets=true" target="_blank") Rollux Testnet
+    .mb-2(v-for="supportedNetwork in supportedNetworks")
+        a(:href="`https://chainlist.org/?search=${encodeURIComponent(supportedNetwork)}&testnets=true`" target="_blank") {{ supportedNetwork }}
     h2#suported-network.mt-4 #supported wallets
     .mb-2
         a(href="https://metamask.io/" target="_blank") Metamask
@@ -28,5 +28,27 @@
 export default {
     // eslint-disable-next-line
     name: 'About',
+    data() {
+        return {
+            supportedNetworks: [],
+        }
+    },
+    mounted() {
+        this.fillSupportedNetworks()
+    },
+    methods: {
+        fillSupportedNetworks() {
+            this.$ethereum.getChains().then(chains => {
+                Object.keys(this.$config.env).forEach(key => {
+                    if (key.startsWith('VUE_APP_FAUCET_CONTRACT_ADDRESS_')) {
+                        const chainId = parseInt(key.substring('VUE_APP_FAUCET_CONTRACT_ADDRESS_'.length))
+                        if (chainId in chains) {
+                            this.supportedNetworks.push(chains[chainId].name)
+                        }
+                    }
+                })
+            })
+        },
+    },
 }
 </script>
