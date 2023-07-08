@@ -10,7 +10,7 @@
         template(v-if="wallet.installed")
             template(v-if="wallet.address")
                 .alert.alert-primary
-                    span Your address:<br><strong>{{ obfuscatedWalletAdress }}</strong>
+                    span Your address:<br><strong>{{ obfuscatedWalletAddress }}</strong>
                     br
                     span(v-if="wallet.chain != null") {{ wallet.chain.name }}
                     span.text-danger(v-else) Unknown or Not-supported Network
@@ -81,7 +81,7 @@ export default {
         chainId() {
             return this.wallet.chain == null ? null : parseInt(this.wallet.chain.chainId)
         },
-        obfuscatedWalletAdress() {
+        obfuscatedWalletAddress() {
             return this.wallet.address == null ? null : `${this.wallet.address.substr(0, 6)}...${this.wallet.address.substr(this.wallet.address.length - 4)}`
         },
         faucetContractAddress() {
