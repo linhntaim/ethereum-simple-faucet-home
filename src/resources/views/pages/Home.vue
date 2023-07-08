@@ -19,23 +19,29 @@
                         button.btn.btn-primary.btn-lg.px-4.gap-3(:disabled="loading.get" @click="onGetClick" type="button")
                             | Get {{ sendingAmount }} {{ wallet.chain.nativeCurrency.symbol }}
                     .form-text(v-if="lastSentAt > 0")
-                        span(:class="{'tip text-danger': lastSentMinutesAgo < delayMinutes}" :title="'You can get coins once every ' + delayDurationText")
+                        span(:class="{'tip text-danger': lastSentMinutesAgo < delayMinutes}" :title="`You can get coins once every ${delayDurationText}`")
                             template(v-if="lastSentDuration.hour > 0 || lastSentDuration.minute > 0")
                                 | You got coins {{ lastSentDurationText }} ago
                             template(v-else)
                                 | You've got coins recently
                     hr
-                    .d-grid.gap-2.d-sm-flex.justify-content-sm-center
-                        input.form-control.border-warning.text-end.fw-bold(type="number" step="0.01" min="0.01" max="100" v-model="donatingAmount" )
-                        button.btn.btn-warning.btn-lg.px-4.gap-3(:disabled="loading.donate" @click="onDonateClick" type="button") Donate
-                    .alert.alert-warning.small.mt-2.mb-2
-                        | Click <strong>Donate</strong> to send {{ donatingAmount }} {{ wallet.chain.nativeCurrency.symbol }}
-                        | to our <span class="tip" title="Which manages the fund (see About page for the sourcecode)">smart contract</span> at the address "<strong>{{ faucetContractAddress }}</strong>" via <em>your wallet</em>.
-                    .progress(role="progressbar" aria-label="Basic example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100")
-                        .progress-bar.bg-warning(:style="{width: fundPercentage + '%'}")
+                    template(v-if="fund.cap > 0")
+                        .d-grid.gap-2.d-sm-flex.justify-content-sm-center
+                            input.form-control.border-warning.text-end.fw-bold(type="number" step="0.01" min="0.01" max="100" v-model="donatingAmount" )
+                            button.btn.btn-warning.btn-lg.px-4.gap-3(:disabled="loading.donate" @click="onDonateClick" type="button") Donate
+                        .alert.alert-warning.small.mt-2.mb-2
+                            | Click <strong>Donate</strong> to send {{ donatingAmount }} {{ wallet.chain.nativeCurrency.symbol }}
+                            | to our <span class="tip" title="Which manages the fund (see About page for the sourcecode)">smart contract</span> at the address "<strong>{{ faucetContractAddress }}</strong>" via <em>your wallet</em>.
+                        .progress(role="progressbar" aria-label="Basic example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100")
+                            .progress-bar.bg-warning(:style="{width: `${fundPercentage}%`}")
+                        .small.text-warning.fw-bold
+                            span.tip(title="Current fund") {{ Math.floor(fund.balance * 100) / 100 }} {{ wallet.chain.nativeCurrency.symbol }}
+                            | &nbsp;/&nbsp;
+                            span.tip(title="Cap") {{ Math.floor(fund.cap * 100) / 100 }} {{ wallet.chain.nativeCurrency.symbol }}
+                    .alert.alert-warning(v-else) Donation is currently disabled
             .d-grid.gap-2.d-sm-flex.justify-content-sm-center(v-else)
                 button.btn.btn-primary.btn-lg.px-4.gap-3(type="button" @click="onConnectWalletClick") Connect wallet
-        .alert.alert-danger(v-else) Please install an Ethereum-based Wallet.
+        .alert.alert-danger(v-else) Please install an EVM-compatible Wallet.
 </template>
 
 <script>
@@ -43,7 +49,6 @@
 import {formatEther, parseUnits} from 'ethers'
 import {SuccessToast} from '@/resources/views/components/toast/success-toast'
 import {DangerToast} from '@/resources/views/components/toast/danger-toast'
-import supportedChains from '@/resources/data/supported-chains.json'
 
 export default {
     // eslint-disable-next-line
@@ -77,13 +82,23 @@ export default {
             return this.wallet.chain == null ? null : parseInt(this.wallet.chain.chainId)
         },
         obfuscatedWalletAdress() {
-            return this.wallet.address == null ? null : this.wallet.address.substr(0, 6) + '...' + this.wallet.address.substr(this.wallet.address.length - 4)
+            return this.wallet.address == null ? null : `${this.wallet.address.substr(0, 6)}...${this.wallet.address.substr(this.wallet.address.length - 4)}`
         },
         faucetContractAddress() {
-            return this.chainId == null ? null : supportedChains[this.chainId].faucetContractAddress
+            return this.chainId == null ? null : this.$config.env[this.faucetContractAddressEnvName(this.chainId)]
         },
         fundPercentage() {
-            return this.fund.cap === 0 ? 100 : (percentage => percentage > 100 ? 100 : percentage)(Math.floor(this.fund.balance / this.fund.cap * 100))
+            return this.fund.cap === 0 ? 0 : (percentage => {
+                console.log(percentage)
+                switch (true) {
+                    case percentage > 100:
+                        return 100
+                    case percentage > 0 && percentage < 1:
+                        return 1
+                    default:
+                        return Math.floor(percentage)
+                }
+            })(this.fund.balance / this.fund.cap * 100)
         },
         lastSentMinutesAgo() {
             return Math.floor((this.now - this.lastSentAt) / 60)
@@ -128,6 +143,9 @@ export default {
             this.stopRefreshDataFromContract()
             this.detachEvents()
         },
+        faucetContractAddressEnvName(chainId) {
+            return `VUE_APP_FAUCET_CONTRACT_ADDRESS_${chainId}`
+        },
         onConnectWalletClick() {
             this.$ethereum.getSigner()
                 .then(signer => this.initSigner(signer))
@@ -145,7 +163,7 @@ export default {
                 .then(network => {
                     this.$ethereum.getChains().then(chains => {
                         const chainId = parseInt(network.chainId)
-                        if (chainId in chains && chainId in supportedChains) {
+                        if (chainId in chains && this.faucetContractAddressEnvName(chainId) in this.$config.env) {
                             this.wallet.chain = chains[chainId]
 
                             this.refreshDataFromContract()
@@ -185,26 +203,31 @@ export default {
                 .then(res => {
                     this.sendingAmount = parseFloat(formatEther(res))
                 })
+                // eslint-disable-next-line
                 .catch(err => console.log(err))
             contract.getCap()
                 .then(res => {
                     this.fund.cap = parseFloat(formatEther(res))
                 })
+                // eslint-disable-next-line
                 .catch(err => console.log(err))
             contract.getBalance()
                 .then(res => {
                     this.fund.balance = parseFloat(formatEther(res))
                 })
+                // eslint-disable-next-line
                 .catch(err => console.log(err))
             contract.getDelayMinutes()
                 .then(res => {
                     this.delayMinutes = parseInt(res)
                 })
+                // eslint-disable-next-line
                 .catch(err => console.log(err))
             contract.getTimeout()
                 .then(res => {
                     this.lastSentAt = parseInt(res)
                 })
+                // eslint-disable-next-line
                 .catch(err => console.log(err))
             this.now = Math.floor(new Date().getTime() / 1000)
         },
@@ -228,7 +251,7 @@ export default {
         },
         getWithFeePaidByOwner() {
             this.loading.get = true
-            fetch(process.env.VUE_APP_FAUCET_ENDPOINT, {
+            fetch(this.$config.env.VUE_APP_FAUCET_ENDPOINT, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -246,7 +269,7 @@ export default {
                 })
                 .then(() => {
                     this.loading.get = false
-                    this.$bus.emit('toast', new SuccessToast('Successfully request to send ' + this.sendingAmount + ' ' + this.wallet.chain.nativeCurrency.symbol + ' to your wallet. Please wait for transaction confirmation.'))
+                    this.$bus.emit('toast', new SuccessToast(`Successfully request to send ${this.sendingAmount} ${this.wallet.chain.nativeCurrency.symbol} to your wallet. Please wait for transaction confirmation.`))
                 })
                 .catch(() => {
                     this.loading.get = false
@@ -261,7 +284,7 @@ export default {
             contract.sendMe()
                 .then(() => {
                     this.loading.get = false
-                    this.$bus.emit('toast', new SuccessToast('Successfully request to send ' + this.sendingAmount + ' ' + this.wallet.chain.nativeCurrency.symbol + ' to your wallet. Please wait for transaction confirmation.'))
+                    this.$bus.emit('toast', new SuccessToast(`Successfully request to send ${this.sendingAmount} ${this.wallet.chain.nativeCurrency.symbol} to your wallet. Please wait for transaction confirmation.`))
                 })
                 .catch(err => {
                     this.loading.get = false
@@ -278,7 +301,7 @@ export default {
                         })
                         .then(() => {
                             this.loading.donate = false
-                            this.$bus.emit('toast', new SuccessToast('Successfully request to donate ' + this.donatingAmount + ' ' + this.wallet.chain.nativeCurrency.symbol + ' to the smart contract. Please wait for transaction confirmation.'))
+                            this.$bus.emit('toast', new SuccessToast(`Successfully request to donate ${this.donatingAmount} ${this.wallet.chain.nativeCurrency.symbol} to the smart contract. Please wait for transaction confirmation.`))
                         })
                         .catch(err => {
                             this.loading.donate = false
@@ -311,8 +334,14 @@ export default {
 }
 
 .text-danger {
-    &.tip[title] {
+    &.tip[title], .tip[title] {
         border-color: rgb(220, 53, 69);
+    }
+}
+
+.text-warning {
+    &.tip[title], .tip[title] {
+        border-color: rgb(255,193,7);
     }
 }
 </style>
