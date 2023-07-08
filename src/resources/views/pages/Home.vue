@@ -89,7 +89,6 @@ export default {
         },
         fundPercentage() {
             return this.fund.cap === 0 ? 0 : (percentage => {
-                console.log(percentage)
                 switch (true) {
                     case percentage > 100:
                         return 100
