@@ -22,7 +22,7 @@ export default {
     components: {ToastContainer},
     data() {
         return {
-            appName: process.env.VUE_APP_NAME,
+            appName: this.$config.env.VUE_APP_NAME,
             navItems: [
                 {
                     title: 'Home',

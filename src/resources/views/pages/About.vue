@@ -9,6 +9,9 @@
         | Website:&nbsp;
         a(href="https://github.com/linhntaim/ethereum-simple-faucet-home" target="_blank") https://github.com/linhntaim/ethereum-simple-faucet-home
     .mb-2
+        | Endpoint:&nbsp;
+        a(href="https://github.com/linhntaim/ethereum-simple-faucet-endpoint" target="_blank") https://github.com/linhntaim/ethereum-simple-faucet-endpoint
+    .mb-2
         | Smartcontract:&nbsp;
         a(href="https://github.com/linhntaim/ethereum-simple-faucet-contract" target="_blank") https://github.com/linhntaim/ethereum-simple-faucet-contract
     h2#suported-network.mt-4 #supported networks
